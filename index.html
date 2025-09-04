@@ -394,8 +394,8 @@
                 <div class="status-step">
                     <div class="step-icon pending" id="step5Icon">5</div>
                     <div class="step-content">
-                        <div class="step-title">Export to Template</div>
-                        <div class="step-description">Copy data to blank template preserving all formatting</div>
+                        <div class="step-title">Export to Template (.XLS)</div>
+                        <div class="step-description">Copy data to blank template preserving all formatting - Export as .XLS</div>
                     </div>
                 </div>
             </div>
@@ -407,10 +407,10 @@
             
             <div class="download-section" id="downloadSection">
                 <h3 style="color: #374151; margin-bottom: 15px;">✅ Processing Complete!</h3>
-                <a class="download-btn" id="downloadBtn" download="Amazon_Confirm_Upload_Processed.xlsx">
-                    📥 Download Processed File
+                <a class="download-btn" id="downloadBtn" download="Amazon_Confirm_Upload_Processed.xls">
+                    📥 Download Processed File (.XLS)
                 </a>
-                <p style="color: #6b7280; margin-top: 10px;">Ready for Amazon upload</p>
+                <p style="color: #6b7280; margin-top: 10px;">Ready for Amazon upload (XLS Format)</p>
             </div>
         </div>
     </div>
@@ -535,8 +535,8 @@
                 updateStepStatus(5, 'completed');
                 updateProgress(5, 5);
                 
-                // Create download
-                const blob = new Blob([finalFile], { type: 'text/csv' });
+                // Create download with proper MIME type for .xls
+                const blob = new Blob([finalFile], { type: 'application/vnd.ms-excel' });
                 const url = URL.createObjectURL(blob);
                 
                 const downloadBtn = document.getElementById('downloadBtn');
@@ -944,12 +944,12 @@
                 e: {c: processedRange.e.c, r: processedRange.e.r}
             });
             
-            console.log('Step 5: Data copied to template successfully');
+            console.log('Step 5: Data copied to template successfully, exporting as .XLS format');
             
-            // Generate Excel file
+            // Generate XLS file (Excel 97-2003 format)
             const workbookOut = XLSX.write(templateWorkbook, {
                 type: 'array',
-                bookType: 'xlsx',
+                bookType: 'xls',  // Changed from 'xlsx' to 'xls'
                 cellStyles: true
             });
             
