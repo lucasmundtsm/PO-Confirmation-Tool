@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Amazon PO Processing Tool</title>
+    <title>Amazon PO Confirmation Tool</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         * {
@@ -13,130 +13,148 @@
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             padding: 20px;
         }
         
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
             background: white;
             border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
         }
         
-        .header {
-            background: linear-gradient(135deg, #232526 0%, #414345 100%);
-            color: white;
-            padding: 40px;
+        h1 {
+            color: #333;
             text-align: center;
-        }
-        
-        .header h1 {
-            font-size: 2.5em;
-            font-weight: 700;
             margin-bottom: 10px;
+            font-size: 32px;
         }
         
-        .header p {
-            font-size: 1.2em;
-            opacity: 0.9;
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
         }
         
-        .main-content {
-            padding: 40px;
+        .instructions {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+        }
+        
+        .instructions h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .instructions ol {
+            margin-left: 20px;
+            color: #555;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+            line-height: 1.6;
         }
         
         .upload-section {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 40px;
+            margin-bottom: 25px;
         }
         
         .upload-box {
-            border: 3px dashed #e0e7ff;
-            border-radius: 15px;
+            border: 2px dashed #ddd;
+            border-radius: 10px;
             padding: 30px;
             text-align: center;
             transition: all 0.3s ease;
-            background: #fafbff;
+            background: #fafafa;
+            position: relative;
+            cursor: pointer;
         }
         
         .upload-box:hover {
             border-color: #667eea;
-            background: #f0f4ff;
+            background: #f5f3ff;
         }
         
-        .upload-box.dragover {
-            border-color: #667eea;
-            background: #e0e7ff;
-            transform: scale(1.02);
+        .upload-box.uploaded {
+            border-color: #48bb78;
+            background: #f0fff4;
+            border-style: solid;
         }
         
         .upload-box h3 {
-            color: #374151;
-            margin-bottom: 15px;
-            font-size: 1.3em;
+            color: #555;
+            margin-bottom: 10px;
+            font-size: 16px;
         }
         
-        .file-input {
+        .upload-box input[type="file"] {
             display: none;
         }
         
-        .upload-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
+        .upload-box label {
             cursor: pointer;
-            font-size: 1em;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            margin-bottom: 15px;
-        }
-        
-        .upload-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
-        }
-        
-        .file-info {
-            margin-top: 10px;
-            padding: 10px;
-            background: #f3f4f6;
-            border-radius: 8px;
-            display: none;
-        }
-        
-        .file-info.show {
             display: block;
         }
         
-        .process-section {
-            text-align: center;
-            margin: 40px 0;
+        .upload-icon {
+            font-size: 40px;
+            color: #999;
+            margin-bottom: 10px;
         }
         
-        .process-btn {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
+        .upload-text {
+            color: #777;
+            font-size: 14px;
+        }
+        
+        .file-name {
+            color: #48bb78;
+            font-weight: bold;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        button {
+            padding: 12px 30px;
             border: none;
-            padding: 15px 40px;
-            border-radius: 12px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
-            font-size: 1.2em;
-            font-weight: 700;
             transition: all 0.3s ease;
         }
         
+        .process-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            flex: 1;
+            max-width: 200px;
+        }
+        
         .process-btn:hover:not(:disabled) {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 30px rgba(16, 185, 129, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
         }
         
         .process-btn:disabled {
@@ -144,844 +162,581 @@
             cursor: not-allowed;
         }
         
-        .status-panel {
-            background: #f9fafb;
-            border-radius: 15px;
-            padding: 30px;
-            margin-top: 30px;
-            display: none;
+        .reset-btn {
+            background: #e2e8f0;
+            color: #4a5568;
         }
         
-        .status-panel.show {
-            display: block;
-        }
-        
-        .status-step {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-            padding: 15px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        .step-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 15px;
-            font-weight: bold;
-            color: white;
-        }
-        
-        .step-icon.pending {
-            background: #9ca3af;
-        }
-        
-        .step-icon.processing {
-            background: #f59e0b;
-            animation: pulse 1.5s infinite;
-        }
-        
-        .step-icon.completed {
-            background: #10b981;
-        }
-        
-        .step-icon.error {
-            background: #ef4444;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-        
-        .step-content {
-            flex: 1;
-        }
-        
-        .step-title {
-            font-weight: 600;
-            color: #374151;
-            margin-bottom: 5px;
-        }
-        
-        .step-description {
-            color: #6b7280;
-            font-size: 0.9em;
-        }
-        
-        .error-panel {
-            background: #fef2f2;
-            border: 2px solid #fecaca;
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 20px;
-            display: none;
-        }
-        
-        .error-panel.show {
-            display: block;
-        }
-        
-        .error-title {
-            color: #dc2626;
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-        
-        .error-list {
-            color: #7f1d1d;
-            font-size: 0.9em;
-        }
-        
-        .download-section {
-            text-align: center;
-            margin-top: 30px;
-            display: none;
-        }
-        
-        .download-section.show {
-            display: block;
+        .reset-btn:hover {
+            background: #cbd5e0;
         }
         
         .download-btn {
-            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            background: #48bb78;
             color: white;
-            border: none;
-            padding: 15px 40px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 1.2em;
-            font-weight: 700;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
+            display: none;
+            animation: slideIn 0.5s ease;
         }
         
         .download-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 30px rgba(139, 92, 246, 0.4);
+            background: #38a169;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(72, 187, 120, 0.4);
         }
         
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: #e5e7eb;
-            border-radius: 4px;
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .status-message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+            animation: slideIn 0.5s ease;
+        }
+        
+        .status-message.success {
+            background: #f0fff4;
+            color: #22543d;
+            border: 1px solid #9ae6b4;
+        }
+        
+        .status-message.error {
+            background: #fff5f5;
+            color: #742a2a;
+            border: 1px solid #feb2b2;
+        }
+        
+        .status-message.warning {
+            background: #fffaf0;
+            color: #7c2d12;
+            border: 1px solid #fed7aa;
+        }
+        
+        .status-message h3 {
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        .status-message ul {
+            margin-left: 20px;
             margin-top: 10px;
-            overflow: hidden;
         }
         
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #10b981, #059669);
-            width: 0%;
-            transition: width 0.3s ease;
+        .status-message li {
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        
+        .spinner {
+            display: none;
+            width: 40px;
+            height: 40px;
+            margin: 20px auto;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .stats {
+            display: none;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .stats h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        
+        .stat-item {
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .stat-label {
+            color: #718096;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .stat-value {
+            color: #2d3748;
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 5px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>🚀 Amazon PO Processing Tool</h1>
-            <p>Complete 5-step workflow: Filter → Transfer → Update → Validate → Export</p>
+        <h1>Amazon PO Confirmation Tool</h1>
+        <p class="subtitle">Automate your Vendor Central PO confirmation process</p>
+        
+        <div class="instructions">
+            <h2>📋 Instructions</h2>
+            <ol>
+                <li><strong>Step 1:</strong> Upload the PO Upload spreadsheet from the Planning Team</li>
+                <li><strong>Step 2:</strong> Upload the Confirmation Download from Vendor Central</li>
+                <li><strong>Step 3:</strong> Run the tool. Upload the output file to Vendor Central to complete the PO Confirmation process</li>
+            </ol>
         </div>
         
-        <div class="main-content">
-            <div class="instructions-section" style="background: #f8fafc; border-radius: 15px; padding: 30px; margin-bottom: 30px; border-left: 5px solid #3b82f6;">
-                <h3 style="color: #1e40af; margin-bottom: 20px; font-size: 1.4em;">📋 Excel Setup Instructions</h3>
-                <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                    <h4 style="color: #374151; margin-bottom: 15px;">Method 1: Trust Center Settings (Most Effective)</h4>
-                    <ol style="color: #6b7280; line-height: 1.6; margin-left: 20px;">
-                        <li style="margin-bottom: 8px;">Open Excel → File → Options → Trust Center → Trust Center Settings</li>
-                        <li style="margin-bottom: 8px;">Click "Protected View" on the left</li>
-                        <li style="margin-bottom: 8px;">Uncheck these options:
-                            <ul style="margin-top: 5px; margin-left: 20px;">
-                                <li>"Enable Protected View for files originating from the Internet"</li>
-                                <li>"Enable Protected View for files located in potentially unsafe locations"</li>
-                                <li>"Enable Protected View for Outlook attachments"</li>
-                            </ul>
-                        </li>
-                        <li>Click OK</li>
-                    </ol>
-                    <p style="color: #7c3aed; font-size: 0.9em; margin-top: 15px; font-style: italic;">
-                        💡 This prevents the output file from opening in Excel's Protected View mode
-                    </p>
-                </div>
-            </div>
-            
-            <div class="upload-section">
-                <div class="upload-box" id="poUploadBox">
+        <div class="upload-section">
+            <div class="upload-box" id="poUploadBox">
+                <label for="poUploadFile">
                     <h3>📊 PO Upload File</h3>
-                    <button class="upload-btn" onclick="document.getElementById('poFile').click()">
-                        Choose File
-                    </button>
-                    <input type="file" id="poFile" class="file-input" accept=".xlsx,.xls" />
-                    <p style="color: #6b7280; font-size: 0.9em;">PO Upload doc from the Planning Team</p>
-                    <div class="file-info" id="poFileInfo"></div>
-                </div>
-                
-                <div class="upload-box" id="confirmUploadBox">
-                    <h3>📋 Confirm Download File</h3>
-                    <button class="upload-btn" onclick="document.getElementById('confirmFile').click()">
-                        Choose File
-                    </button>
-                    <input type="file" id="confirmFile" class="file-input" accept=".xlsx,.xls" />
-                    <p style="color: #6b7280; font-size: 0.9em;">Confirmation Download from Vendor Central</p>
-                    <div class="file-info" id="confirmFileInfo"></div>
-                </div>
-                
-                <div class="upload-box" id="templateUploadBox">
-                    <h3>📄 Blank Template File</h3>
-                    <button class="upload-btn" onclick="document.getElementById('templateFile').click()">
-                        Choose File
-                    </button>
-                    <input type="file" id="templateFile" class="file-input" accept=".xlsx,.xls" />
-                    <p style="color: #6b7280; font-size: 0.9em;">Blank Vendor Central Confirmation Template</p>
-                    <div class="file-info" id="templateFileInfo"></div>
-                </div>
+                    <div class="upload-icon">📁</div>
+                    <div class="upload-text">Click to select or drag & drop<br><small>(.xlsx file from Planning Team)</small></div>
+                    <div class="file-name" id="poUploadFileName"></div>
+                </label>
+                <input type="file" id="poUploadFile" accept=".xlsx" />
             </div>
-            
-            <div class="process-section">
-                <button class="process-btn" id="processBtn" onclick="processFiles()" disabled>
-                    🔄 Process Files
-                </button>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill"></div>
-                </div>
+        </div>
+        
+        <div class="upload-section">
+            <div class="upload-box" id="confirmDownloadBox">
+                <label for="confirmDownloadFile">
+                    <h3>📥 Confirm Download File</h3>
+                    <div class="upload-icon">📁</div>
+                    <div class="upload-text">Click to select or drag & drop<br><small>(.xls file from Vendor Central)</small></div>
+                    <div class="file-name" id="confirmDownloadFileName"></div>
+                </label>
+                <input type="file" id="confirmDownloadFile" accept=".xls,.xlsx" />
             </div>
-            
-            <div class="status-panel" id="statusPanel">
-                <h3 style="margin-bottom: 20px; color: #374151;">Processing Status</h3>
-                
-                <div class="status-step">
-                    <div class="step-icon pending" id="step1Icon">1</div>
-                    <div class="step-content">
-                        <div class="step-title">Filter Confirm Download</div>
-                        <div class="step-description">Remove rows where PO Number doesn't exist in PO Upload</div>
-                    </div>
-                </div>
-                
-                <div class="status-step">
-                    <div class="step-icon pending" id="step2Icon">2</div>
-                    <div class="step-content">
-                        <div class="step-title">Transfer Quantities</div>
-                        <div class="step-description">Copy Total Qty to Fulfill to Quantity Confirmed using PO+ASIN matching</div>
-                    </div>
-                </div>
-                
-                <div class="status-step">
-                    <div class="step-icon pending" id="step3Icon">3</div>
-                    <div class="step-content">
-                        <div class="step-title">Update Availability Status</div>
-                        <div class="step-description">Set status based on quantity (>0 = Accepted, =0 = Out of stock)</div>
-                    </div>
-                </div>
-                
-                <div class="status-step">
-                    <div class="step-icon pending" id="step4Icon">4</div>
-                    <div class="step-content">
-                        <div class="step-title">Validate Hand Off Dates</div>
-                        <div class="step-description">Ensure Expected Hand Off Date ≤ Hand Off End</div>
-                    </div>
-                </div>
-                
-                <div class="status-step">
-                    <div class="step-icon pending" id="step5Icon">5</div>
-                    <div class="step-content">
-                        <div class="step-title">Export to Template (.XLS)</div>
-                        <div class="step-description">Copy data to blank template preserving all formatting - Export as .XLS</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="error-panel" id="errorPanel">
-                <div class="error-title">⚠️ Processing Errors</div>
-                <div class="error-list" id="errorList"></div>
-            </div>
-            
-            <div class="download-section" id="downloadSection">
-                <h3 style="color: #374151; margin-bottom: 15px;">✅ Processing Complete!</h3>
-                <a class="download-btn" id="downloadBtn" download="Amazon_Confirm_Upload_Processed.xls">
-                    📥 Download Processed File (.XLS)
-                </a>
-                <p style="color: #6b7280; margin-top: 10px;">Ready for Amazon upload (XLS Format)</p>
-            </div>
+        </div>
+        
+        <div class="button-group">
+            <button class="reset-btn" onclick="resetFiles()">Reset Files</button>
+            <button class="process-btn" id="processBtn" onclick="processFiles()" disabled>Process Files</button>
+            <button class="download-btn" id="downloadBtn" onclick="downloadResult()">Download Result (.xls)</button>
+        </div>
+        
+        <div class="spinner" id="spinner"></div>
+        
+        <div class="status-message" id="statusMessage"></div>
+        
+        <div class="stats" id="stats">
+            <h3>📈 Processing Summary</h3>
+            <div class="stats-grid" id="statsGrid"></div>
         </div>
     </div>
 
     <script>
-        let poData = null;
-        let confirmData = null;
-        let templateData = null;
-        let errors = [];
+        let poUploadData = null;
+        let confirmDownloadData = null;
+        let resultWorkbook = null;
+        let poUploadFileName = '';
+        let confirmDownloadFileName = '';
 
         // File upload handlers
-        document.getElementById('poFile').addEventListener('change', (e) => handleFileUpload(e, 'po'));
-        document.getElementById('confirmFile').addEventListener('change', (e) => handleFileUpload(e, 'confirm'));
-        document.getElementById('templateFile').addEventListener('change', (e) => handleFileUpload(e, 'template'));
+        document.getElementById('poUploadFile').addEventListener('change', function(e) {
+            handleFileUpload(e, 'poUpload');
+        });
 
-        function handleFileUpload(event, type) {
-            const file = event.target.files[0];
-            if (!file) return;
+        document.getElementById('confirmDownloadFile').addEventListener('change', function(e) {
+            handleFileUpload(e, 'confirmDownload');
+        });
 
-            const fileInfo = document.getElementById(`${type}FileInfo`);
-            fileInfo.innerHTML = `
-                <strong>${file.name}</strong><br>
-                <small>Size: ${(file.size / 1024 / 1024).toFixed(2)} MB</small>
-            `;
-            fileInfo.classList.add('show');
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, { type: 'array', cellStyles: true, cellFormulas: true, cellDates: true });
-                
-                if (type === 'po') {
-                    poData = workbook;
-                } else if (type === 'confirm') {
-                    confirmData = workbook;
-                } else if (type === 'template') {
-                    templateData = workbook;
-                }
-
-                checkReadyState();
-            };
-            reader.readAsArrayBuffer(file);
-        }
-
-        function checkReadyState() {
-            const processBtn = document.getElementById('processBtn');
-            if (poData && confirmData && templateData) {
-                processBtn.disabled = false;
-                processBtn.textContent = '🚀 Process Files';
-            }
-        }
-
-        function updateProgress(step, total) {
-            const progressFill = document.getElementById('progressFill');
-            const percentage = (step / total) * 100;
-            progressFill.style.width = `${percentage}%`;
-        }
-
-        function updateStepStatus(stepNum, status) {
-            const icon = document.getElementById(`step${stepNum}Icon`);
-            icon.className = `step-icon ${status}`;
-            
-            if (status === 'processing') {
-                icon.innerHTML = '⏳';
-            } else if (status === 'completed') {
-                icon.innerHTML = '✅';
-            } else if (status === 'error') {
-                icon.innerHTML = '❌';
-            }
-        }
-
-        function addError(message) {
-            errors.push(message);
-            const errorPanel = document.getElementById('errorPanel');
-            const errorList = document.getElementById('errorList');
-            
-            errorList.innerHTML = errors.map(error => `<div>• ${error}</div>`).join('');
-            errorPanel.classList.add('show');
-        }
-
-        async function processFiles() {
-            try {
-                errors = [];
-                document.getElementById('statusPanel').classList.add('show');
-                document.getElementById('errorPanel').classList.remove('show');
-                document.getElementById('downloadSection').classList.remove('show');
-                
-                // Reset all step icons
-                for (let i = 1; i <= 5; i++) {
-                    updateStepStatus(i, 'pending');
-                }
-
-                // Step 1: Filter Confirm Download
-                updateStepStatus(1, 'processing');
-                updateProgress(0, 5);
-                
-                const filteredConfirmData = await step1FilterConfirmDownload();
-                updateStepStatus(1, 'completed');
-                updateProgress(1, 5);
-                
-                // Step 2: Transfer Quantities
-                updateStepStatus(2, 'processing');
-                const quantityUpdatedData = await step2TransferQuantities(filteredConfirmData);
-                updateStepStatus(2, 'completed');
-                updateProgress(2, 5);
-                
-                // Step 3: Update Availability Status
-                updateStepStatus(3, 'processing');
-                const statusUpdatedData = await step3UpdateAvailabilityStatus(quantityUpdatedData);
-                updateStepStatus(3, 'completed');
-                updateProgress(3, 5);
-                
-                // Step 4: Validate Hand Off Dates
-                updateStepStatus(4, 'processing');
-                const dateValidatedData = await step4ValidateHandOffDates(statusUpdatedData);
-                updateStepStatus(4, 'completed');
-                updateProgress(4, 5);
-                
-                // Step 5: Export to Template
-                updateStepStatus(5, 'processing');
-                const finalFile = await step5ExportToTemplate(dateValidatedData);
-                updateStepStatus(5, 'completed');
-                updateProgress(5, 5);
-                
-                // Create download with proper MIME type for .xls
-                const blob = new Blob([finalFile], { type: 'application/vnd.ms-excel' });
-                const url = URL.createObjectURL(blob);
-                
-                const downloadBtn = document.getElementById('downloadBtn');
-                downloadBtn.href = url;
-                
-                document.getElementById('downloadSection').classList.add('show');
-                
-            } catch (error) {
-                console.error('Processing error:', error);
-                addError(`Processing failed: ${error.message}`);
-                
-                // Mark current step as error
-                for (let i = 1; i <= 5; i++) {
-                    const icon = document.getElementById(`step${i}Icon`);
-                    if (icon.className.includes('processing')) {
-                        updateStepStatus(i, 'error');
-                        break;
-                    }
-                }
-            }
-        }
-
-        async function step1FilterConfirmDownload() {
-            // Get PO Numbers from PO Upload (Column A, starting row 2)
-            const poSheet = poData.Sheets[poData.SheetNames[0]]; // Assuming first sheet
-            const poNumbers = new Set();
-            
-            // Extract PO Numbers from PO Upload
-            const poRange = XLSX.utils.decode_range(poSheet['!ref']);
-            for (let row = 1; row <= poRange.e.r; row++) {
-                const cellRef = XLSX.utils.encode_cell({r: row, c: 0});
-                const cell = poSheet[cellRef];
-                if (cell && cell.v) {
-                    poNumbers.add(String(cell.v).trim());
-                }
-            }
-
-            // Filter Confirm Download
-            const confirmSheet = confirmData.Sheets["Line Items"];
-            const confirmRange = XLSX.utils.decode_range(confirmSheet['!ref']);
-            const filteredRows = [];
-            
-            // Keep header rows (0-2)
-            for (let row = 0; row <= 2; row++) {
-                filteredRows.push(row);
-            }
-            
-            // Check data rows (starting from row 3)
-            let removedCount = 0;
-            for (let row = 3; row <= confirmRange.e.r; row++) {
-                const cellRef = XLSX.utils.encode_cell({r: row, c: 0});
-                const cell = confirmSheet[cellRef];
-                
-                if (cell && cell.v) {
-                    const poNumber = String(cell.v).trim();
-                    if (poNumbers.has(poNumber)) {
-                        filteredRows.push(row);
-                    } else {
-                        removedCount++;
-                    }
-                }
-            }
-            
-            console.log(`Step 1: Removed ${removedCount} rows, kept ${filteredRows.length - 3} data rows`);
-            
-            // Create filtered sheet data
-            const filteredSheet = {};
-            
-            // Copy sheet properties
-            Object.keys(confirmSheet).forEach(key => {
-                if (key.startsWith('!')) {
-                    filteredSheet[key] = confirmSheet[key];
-                }
-            });
-            
-            // Copy filtered rows
-            filteredRows.forEach((originalRow, newRowIndex) => {
-                for (let col = 0; col <= confirmRange.e.c; col++) {
-                    const originalCellRef = XLSX.utils.encode_cell({r: originalRow, c: col});
-                    const newCellRef = XLSX.utils.encode_cell({r: newRowIndex, c: col});
-                    
-                    if (confirmSheet[originalCellRef]) {
-                        filteredSheet[newCellRef] = {...confirmSheet[originalCellRef]};
-                    }
-                }
-            });
-            
-            // Update range
-            filteredSheet['!ref'] = XLSX.utils.encode_range({
-                s: {c: 0, r: 0},
-                e: {c: confirmRange.e.c, r: filteredRows.length - 1}
-            });
-            
-            return filteredSheet;
-        }
-
-        async function step2TransferQuantities(confirmSheet) {
-            // Build lookup map from PO Upload (PO Number + ASIN -> Total Qty to Fulfill)
-            const poSheet = poData.Sheets[poData.SheetNames[0]];
-            const poRange = XLSX.utils.decode_range(poSheet['!ref']);
-            const quantityLookup = new Map();
-            const duplicateKeys = new Set();
-            
-            // Build lookup from PO Upload
-            for (let row = 1; row <= poRange.e.r; row++) {
-                const poCell = poSheet[XLSX.utils.encode_cell({r: row, c: 0})]; // Column A
-                const asinCell = poSheet[XLSX.utils.encode_cell({r: row, c: 3})]; // Column D  
-                const qtyCell = poSheet[XLSX.utils.encode_cell({r: row, c: 42})]; // Column AQ (Total Qty to Fulfill)
-                
-                if (poCell && poCell.v && asinCell && asinCell.v && qtyCell && qtyCell.v !== undefined) {
-                    const key = `${String(poCell.v).trim()}|${String(asinCell.v).trim()}`;
-                    
-                    if (quantityLookup.has(key)) {
-                        duplicateKeys.add(key);
-                        addError(`Duplicate PO+ASIN combination found: ${key}`);
-                    } else {
-                        // Validate quantity is numeric
-                        const qty = Number(qtyCell.v);
-                        if (isNaN(qty)) {
-                            addError(`Invalid quantity value at row ${row + 1}: ${qtyCell.v}`);
-                        } else {
-                            quantityLookup.set(key, qty);
-                        }
-                    }
-                }
-            }
-            
-            // Update Confirm Download quantities
-            const confirmRange = XLSX.utils.decode_range(confirmSheet['!ref']);
-            let updatedCount = 0;
-            let missingMatches = 0;
-            
-            for (let row = 3; row <= confirmRange.e.r; row++) {
-                const poCell = confirmSheet[XLSX.utils.encode_cell({r: row, c: 0})]; // Column A
-                const asinCell = confirmSheet[XLSX.utils.encode_cell({r: row, c: 3})]; // Column D
-                
-                if (poCell && poCell.v && asinCell && asinCell.v) {
-                    const key = `${String(poCell.v).trim()}|${String(asinCell.v).trim()}`;
-                    
-                    if (quantityLookup.has(key)) {
-                        const qty = quantityLookup.get(key);
-                        const qtyConfirmedRef = XLSX.utils.encode_cell({r: row, c: 11}); // Column L
-                        
-                        confirmSheet[qtyConfirmedRef] = {
-                            v: qty,
-                            t: 'n',
-                            z: '0'
-                        };
-                        
-                        updatedCount++;
-                    } else {
-                        missingMatches++;
-                        addError(`Missing PO+ASIN match in PO Upload: ${key} (row ${row + 1})`);
-                    }
-                }
-            }
-            
-            console.log(`Step 2: Updated ${updatedCount} quantities, ${missingMatches} missing matches`);
-            
-            if (duplicateKeys.size > 0) {
-                addError(`Found ${duplicateKeys.size} duplicate PO+ASIN combinations in PO Upload`);
-            }
-            
-            return confirmSheet;
-        }
-
-        async function step3UpdateAvailabilityStatus(confirmSheet) {
-            const confirmRange = XLSX.utils.decode_range(confirmSheet['!ref']);
-            let updatedCount = 0;
-            
-            for (let row = 3; row <= confirmRange.e.r; row++) {
-                const qtyConfirmedRef = XLSX.utils.encode_cell({r: row, c: 11}); // Column L
-                const availabilityRef = XLSX.utils.encode_cell({r: row, c: 18}); // Column S
-                
-                const qtyCell = confirmSheet[qtyConfirmedRef];
-                
-                if (qtyCell && qtyCell.v !== undefined) {
-                    const qty = Number(qtyCell.v);
-                    
-                    if (isNaN(qty)) {
-                        addError(`Invalid quantity for status update at row ${row + 1}: ${qtyCell.v}`);
-                        continue;
-                    }
-                    
-                    let status;
-                    if (qty > 0) {
-                        status = "AC - Accepted: In stock";
-                    } else if (qty === 0) {
-                        status = "OS - Cancelled: Out of stock";
-                    } else {
-                        addError(`Negative quantity found at row ${row + 1}: ${qty}`);
-                        continue;
-                    }
-                    
-                    confirmSheet[availabilityRef] = {
-                        v: status,
-                        t: 's',
-                        z: '@'
-                    };
-                    
-                    updatedCount++;
-                }
-            }
-            
-            console.log(`Step 3: Updated ${updatedCount} availability statuses`);
-            return confirmSheet;
-        }
-
-        async function step4ValidateHandOffDates(confirmSheet) {
-            const confirmRange = XLSX.utils.decode_range(confirmSheet['!ref']);
-            let adjustedCount = 0;
-            let errorCount = 0;
-            
-            for (let row = 3; row <= confirmRange.e.r; row++) {
-                const handOffEndRef = XLSX.utils.encode_cell({r: row, c: 15}); // Column P
-                const expectedDateRef = XLSX.utils.encode_cell({r: row, c: 17}); // Column R
-                
-                const handOffEndCell = confirmSheet[handOffEndRef];
-                const expectedDateCell = confirmSheet[expectedDateRef];
-                
-                // Check for missing dates
-                if (!handOffEndCell || !handOffEndCell.v) {
-                    addError(`Missing Hand Off End date at row ${row + 1}`);
-                    errorCount++;
-                    continue;
-                }
-                
-                if (!expectedDateCell || !expectedDateCell.v) {
-                    addError(`Missing Expected Hand Off Date at row ${row + 1}`);
-                    errorCount++;
-                    continue;
-                }
-                
-                // Parse dates
-                let handOffEndDate, expectedDate;
-                
-                try {
-                    if (handOffEndCell.t === 'd') {
-                        handOffEndDate = new Date(handOffEndCell.v);
-                    } else {
-                        handOffEndDate = new Date(handOffEndCell.v);
-                    }
-                    
-                    if (expectedDateCell.t === 'd') {
-                        expectedDate = new Date(expectedDateCell.v);
-                    } else {
-                        expectedDate = new Date(expectedDateCell.v);
-                    }
-                    
-                    if (isNaN(handOffEndDate.getTime()) || isNaN(expectedDate.getTime())) {
-                        throw new Error('Invalid date format');
-                    }
-                } catch (e) {
-                    addError(`Invalid date format at row ${row + 1}`);
-                    errorCount++;
-                    continue;
-                }
-                
-                // Check if Expected > Hand Off End
-                if (expectedDate > handOffEndDate) {
-                    confirmSheet[expectedDateRef] = {...handOffEndCell};
-                    adjustedCount++;
-                }
-            }
-            
-            console.log(`Step 4: Adjusted ${adjustedCount} dates, ${errorCount} errors found`);
-            return confirmSheet;
-        }
-
-        async function step5ExportToTemplate(processedConfirmSheet) {
-            // Get the template workbook
-            const templateWorkbook = {...templateData};
-            const templateSheet = templateWorkbook.Sheets["Line Items"];
-            
-            // Copy processed data to template (paste special values equivalent)
-            const processedRange = XLSX.utils.decode_range(processedConfirmSheet['!ref']);
-            
-            // Copy only data values, preserving template formatting
-            for (let row = 0; row <= processedRange.e.r; row++) {
-                for (let col = 0; col <= processedRange.e.c; col++) {
-                    const cellRef = XLSX.utils.encode_cell({r: row, c: col});
-                    const processedCell = processedConfirmSheet[cellRef];
-                    
-                    if (processedCell && processedCell.v !== undefined) {
-                        // Only copy the value, preserving template formatting
-                        if (templateSheet[cellRef]) {
-                            // Update existing cell with new value, keep formatting
-                            templateSheet[cellRef].v = processedCell.v;
-                            templateSheet[cellRef].w = processedCell.w || String(processedCell.v);
-                        } else {
-                            // Create new cell with basic formatting
-                            templateSheet[cellRef] = {
-                                v: processedCell.v,
-                                t: processedCell.t || 's',
-                                z: processedCell.z || '@'
-                            };
-                        }
-                    }
-                }
-            }
-            
-            // Set current date in cell B2
-            const today = new Date();
-            const b2CellRef = 'B2';
-            
-            // Check if B2 exists and get its format, or use default date format
-            let dateFormat = '[$-en-US]m/d/yyyy';
-            if (templateSheet[b2CellRef] && templateSheet[b2CellRef].z) {
-                dateFormat = templateSheet[b2CellRef].z;
-            }
-            
-            templateSheet[b2CellRef] = {
-                v: today,
-                t: 'd',
-                z: dateFormat
-            };
-            
-            // Validate Hand Off End dates in Column P (index 15) and Expected Hand Off dates in Column R (index 17) - ensure they are not in the past
-            let updatedHandOffDates = 0;
-            let updatedExpectedDates = 0;
-            
-            for (let row = 3; row <= processedRange.e.r; row++) {
-                const handOffEndRef = XLSX.utils.encode_cell({r: row, c: 15}); // Column P
-                const expectedHandOffRef = XLSX.utils.encode_cell({r: row, c: 17}); // Column R
-                
-                // Validate Hand Off End date (Column P)
-                const handOffEndCell = templateSheet[handOffEndRef];
-                if (handOffEndCell && handOffEndCell.v) {
-                    let handOffEndDate;
-                    
-                    try {
-                        if (handOffEndCell.t === 'd') {
-                            handOffEndDate = new Date(handOffEndCell.v);
-                        } else {
-                            handOffEndDate = new Date(handOffEndCell.v);
-                        }
-                        
-                        if (!isNaN(handOffEndDate.getTime())) {
-                            // Compare dates (ignoring time component)
-                            const todayDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-                            const handOffDateOnly = new Date(handOffEndDate.getFullYear(), handOffEndDate.getMonth(), handOffEndDate.getDate());
-                            
-                            if (handOffDateOnly < todayDateOnly) {
-                                // Update to today's date, preserving the original date format
-                                let originalFormat = handOffEndCell.z || dateFormat;
-                                templateSheet[handOffEndRef] = {
-                                    v: today,
-                                    t: 'd',
-                                    z: originalFormat
-                                };
-                                updatedHandOffDates++;
-                            }
-                        }
-                    } catch (e) {
-                        // If date parsing fails, leave the original value
-                        console.log(`Warning: Could not parse Hand Off End date at row ${row + 1}`);
-                    }
-                }
-                
-                // Validate Expected Hand Off date (Column R)
-                const expectedHandOffCell = templateSheet[expectedHandOffRef];
-                if (expectedHandOffCell && expectedHandOffCell.v) {
-                    let expectedHandOffDate;
-                    
-                    try {
-                        if (expectedHandOffCell.t === 'd') {
-                            expectedHandOffDate = new Date(expectedHandOffCell.v);
-                        } else {
-                            expectedHandOffDate = new Date(expectedHandOffCell.v);
-                        }
-                        
-                        if (!isNaN(expectedHandOffDate.getTime())) {
-                            // Compare dates (ignoring time component)
-                            const todayDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-                            const expectedDateOnly = new Date(expectedHandOffDate.getFullYear(), expectedHandOffDate.getMonth(), expectedHandOffDate.getDate());
-                            
-                            if (expectedDateOnly < todayDateOnly) {
-                                // Update to today's date, preserving the original date format
-                                let originalFormat = expectedHandOffCell.z || dateFormat;
-                                templateSheet[expectedHandOffRef] = {
-                                    v: today,
-                                    t: 'd',
-                                    z: originalFormat
-                                };
-                                updatedExpectedDates++;
-                            }
-                        }
-                    } catch (e) {
-                        // If date parsing fails, leave the original value
-                        console.log(`Warning: Could not parse Expected Hand Off date at row ${row + 1}`);
-                    }
-                }
-            }
-            
-            if (updatedHandOffDates > 0) {
-                console.log(`Step 5: Updated ${updatedHandOffDates} Hand Off End dates to current date`);
-            }
-            if (updatedExpectedDates > 0) {
-                console.log(`Step 5: Updated ${updatedExpectedDates} Expected Hand Off dates to current date`);
-            }
-            
-            // Update the range to match processed data
-            templateSheet['!ref'] = XLSX.utils.encode_range({
-                s: {c: 0, r: 0},
-                e: {c: processedRange.e.c, r: processedRange.e.r}
-            });
-            
-            console.log('Step 5: Data copied to template successfully, exporting as .XLS format');
-            
-            // Generate XLS file (Excel 97-2003 format)
-            const workbookOut = XLSX.write(templateWorkbook, {
-                type: 'array',
-                bookType: 'xls',  // Changed from 'xlsx' to 'xls'
-                cellStyles: true
-            });
-            
-            return workbookOut;
-        }
-
-        // Drag and drop functionality
-        ['poUploadBox', 'confirmUploadBox', 'templateUploadBox'].forEach(boxId => {
+        // Drag and drop handlers
+        ['poUploadBox', 'confirmDownloadBox'].forEach(boxId => {
             const box = document.getElementById(boxId);
-            const fileType = boxId.replace('UploadBox', '');
             
             box.addEventListener('dragover', (e) => {
                 e.preventDefault();
-                box.classList.add('dragover');
+                box.style.borderColor = '#667eea';
+                box.style.background = '#f5f3ff';
             });
             
-            box.addEventListener('dragleave', () => {
-                box.classList.remove('dragover');
+            box.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                box.style.borderColor = '#ddd';
+                box.style.background = '#fafafa';
             });
             
             box.addEventListener('drop', (e) => {
                 e.preventDefault();
-                box.classList.remove('dragover');
+                box.style.borderColor = '#ddd';
+                box.style.background = '#fafafa';
                 
-                const files = e.dataTransfer.files;
-                if (files.length > 0) {
-                    const fileInput = document.getElementById(`${fileType}File`);
-                    fileInput.files = files;
-                    fileInput.dispatchEvent(new Event('change'));
-                }
+                const file = e.dataTransfer.files[0];
+                const type = boxId.replace('Box', '');
+                handleDroppedFile(file, type);
             });
         });
+
+        function handleDroppedFile(file, type) {
+            if (type === 'poUpload' && file.name.endsWith('.xlsx')) {
+                processFile(file, type);
+            } else if (type === 'confirmDownload' && (file.name.endsWith('.xls') || file.name.endsWith('.xlsx'))) {
+                processFile(file, type);
+            } else {
+                showStatus('error', 'Invalid file type. Please upload the correct file format.');
+            }
+        }
+
+        function handleFileUpload(event, type) {
+            const file = event.target.files[0];
+            if (file) {
+                processFile(file, type);
+            }
+        }
+
+        function processFile(file, type) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array', cellDates: true, dateNF: 'mm/dd/yyyy' });
+                    
+                    if (type === 'poUpload') {
+                        poUploadData = workbook;
+                        poUploadFileName = file.name;
+                        document.getElementById('poUploadFileName').textContent = '✓ ' + file.name;
+                        document.getElementById('poUploadBox').classList.add('uploaded');
+                    } else {
+                        confirmDownloadData = workbook;
+                        confirmDownloadFileName = file.name;
+                        document.getElementById('confirmDownloadFileName').textContent = '✓ ' + file.name;
+                        document.getElementById('confirmDownloadBox').classList.add('uploaded');
+                    }
+                    
+                    checkReadyToProcess();
+                } catch (error) {
+                    showStatus('error', `Error reading ${type} file: ${error.message}`);
+                }
+            };
+            
+            reader.readAsArrayBuffer(file);
+        }
+
+        function checkReadyToProcess() {
+            const processBtn = document.getElementById('processBtn');
+            if (poUploadData && confirmDownloadData) {
+                processBtn.disabled = false;
+                showStatus('success', 'Both files loaded successfully. Ready to process!');
+            }
+        }
+
+        function resetFiles() {
+            poUploadData = null;
+            confirmDownloadData = null;
+            resultWorkbook = null;
+            
+            document.getElementById('poUploadFile').value = '';
+            document.getElementById('confirmDownloadFile').value = '';
+            document.getElementById('poUploadFileName').textContent = '';
+            document.getElementById('confirmDownloadFileName').textContent = '';
+            document.getElementById('poUploadBox').classList.remove('uploaded');
+            document.getElementById('confirmDownloadBox').classList.remove('uploaded');
+            document.getElementById('processBtn').disabled = true;
+            document.getElementById('downloadBtn').style.display = 'none';
+            document.getElementById('statusMessage').style.display = 'none';
+            document.getElementById('stats').style.display = 'none';
+        }
+
+        function showStatus(type, message, details = []) {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.className = 'status-message ' + type;
+            
+            let html = `<h3>${type === 'success' ? '✅' : type === 'error' ? '❌' : '⚠️'} ${message}</h3>`;
+            
+            if (details.length > 0) {
+                html += '<ul>';
+                details.forEach(detail => {
+                    html += `<li>${detail}</li>`;
+                });
+                html += '</ul>';
+            }
+            
+            statusDiv.innerHTML = html;
+            statusDiv.style.display = 'block';
+        }
+
+        function processFiles() {
+            const spinner = document.getElementById('spinner');
+            spinner.style.display = 'block';
+            document.getElementById('processBtn').disabled = true;
+            document.getElementById('statusMessage').style.display = 'none';
+            
+            setTimeout(() => {
+                try {
+                    const errors = [];
+                    const warnings = [];
+                    const stats = {
+                        totalRows: 0,
+                        rowsKept: 0,
+                        rowsRemoved: 0,
+                        itemsConfirmed: 0,
+                        itemsCanceled: 0,
+                        datesAdjusted: 0
+                    };
+                    
+                    // Get PO Upload data
+                    const poSheet = poUploadData.Sheets[poUploadData.SheetNames[0]];
+                    const poData = XLSX.utils.sheet_to_json(poSheet, { header: 1, raw: false, dateNF: 'mm/dd/yyyy' });
+                    
+                    // Build lookup maps from PO Upload
+                    const validPOs = new Set();
+                    const poAsinToQtyMap = new Map();
+                    
+                    // Skip header row (assuming data starts at row 2)
+                    for (let i = 1; i < poData.length; i++) {
+                        const po = poData[i][0]; // Order/PO Number
+                        const asin = poData[i][3]; // ASIN
+                        const qtyToFulfill = poData[i][42]; // Total Qty to Fulfill
+                        
+                        if (po) {
+                            validPOs.add(po);
+                            if (asin && qtyToFulfill !== undefined && qtyToFulfill !== '') {
+                                const key = `${po}|${asin}`;
+                                poAsinToQtyMap.set(key, qtyToFulfill);
+                            }
+                        }
+                    }
+                    
+                    // Get Confirm Download data
+                    const confirmSheet = confirmDownloadData.Sheets['Line Items'];
+                    const confirmData = XLSX.utils.sheet_to_json(confirmSheet, { header: 1, raw: false, dateNF: 'mm/dd/yyyy' });
+                    
+                    // Process Confirm Download data
+                    const outputData = [];
+                    
+                    // Keep header rows (0-2)
+                    for (let i = 0; i < 3; i++) {
+                        outputData.push(confirmData[i]);
+                    }
+                    
+                    // Process data rows (starting from row 3)
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    
+                    for (let i = 3; i < confirmData.length; i++) {
+                        const row = [...confirmData[i]]; // Create a copy of the row
+                        const po = row[0]; // Order/PO Number
+                        const asin = row[3]; // ASIN
+                        
+                        stats.totalRows++;
+                        
+                        // Step 1: Filter by valid POs
+                        if (!po || !validPOs.has(po)) {
+                            stats.rowsRemoved++;
+                            continue; // Skip this row
+                        }
+                        
+                        // Step 2: Update Quantity Confirmed
+                        const lookupKey = `${po}|${asin}`;
+                        if (poAsinToQtyMap.has(lookupKey)) {
+                            const qtyToFulfill = parseFloat(poAsinToQtyMap.get(lookupKey)) || 0;
+                            row[11] = qtyToFulfill.toString(); // Quantity Confirmed column
+                            
+                            // Step 3: Update Availability Status
+                            if (qtyToFulfill > 0) {
+                                row[18] = 'AC - Accepted: In stock';
+                                stats.itemsConfirmed++;
+                            } else if (qtyToFulfill === 0) {
+                                row[18] = 'OS - Cancelled: Out of stock';
+                                stats.itemsCanceled++;
+                            } else {
+                                errors.push(`Row ${i + 1}: Negative quantity (${qtyToFulfill}) for PO ${po}, ASIN ${asin}`);
+                            }
+                        } else {
+                            errors.push(`Row ${i + 1}: No matching PO+ASIN found in PO Upload for ${po}, ${asin}`);
+                        }
+                        
+                        // Check for invalid Quantity Confirmed values
+                        const qtyConfirmed = row[11];
+                        if (qtyConfirmed === '' || qtyConfirmed === undefined || qtyConfirmed === null) {
+                            errors.push(`Row ${i + 1}: Blank Quantity Confirmed for PO ${po}, ASIN ${asin}`);
+                        } else if (parseFloat(qtyConfirmed) < 0) {
+                            errors.push(`Row ${i + 1}: Negative Quantity Confirmed (${qtyConfirmed}) for PO ${po}, ASIN ${asin}`);
+                        }
+                        
+                        // Step 4: Adjust Expected Hand Off Date
+                        let expectedDate = parseDate(row[17]); // Expected Hand Off Date
+                        let handOffEndDate = parseDate(row[15]); // Hand Off End
+                        let dateAdjusted = false;
+                        
+                        if (expectedDate && handOffEndDate) {
+                            // Rule 1: Expected date cannot be later than Hand Off End
+                            if (expectedDate > handOffEndDate) {
+                                expectedDate = handOffEndDate;
+                                dateAdjusted = true;
+                            }
+                            
+                            // Rule 2: Expected date cannot be before today
+                            if (expectedDate < today) {
+                                expectedDate = today;
+                                dateAdjusted = true;
+                            }
+                            
+                            if (dateAdjusted) {
+                                row[17] = formatDate(expectedDate);
+                                stats.datesAdjusted++;
+                            }
+                        }
+                        
+                        outputData.push(row);
+                        stats.rowsKept++;
+                    }
+                    
+                    // Create output workbook with all three sheets
+                    resultWorkbook = XLSX.utils.book_new();
+                    
+                    // Add Reference Data sheet (if it exists)
+                    if (confirmDownloadData.Sheets['Reference Data']) {
+                        const refSheet = confirmDownloadData.Sheets['Reference Data'];
+                        XLSX.utils.book_append_sheet(resultWorkbook, refSheet, 'Reference Data');
+                    }
+                    
+                    // Add Line Items sheet with processed data
+                    const outputSheet = XLSX.utils.aoa_to_sheet(outputData);
+                    XLSX.utils.book_append_sheet(resultWorkbook, outputSheet, 'Line Items');
+                    
+                    // Add Instructions sheet (if it exists)
+                    if (confirmDownloadData.Sheets['Instructions']) {
+                        const instSheet = confirmDownloadData.Sheets['Instructions'];
+                        XLSX.utils.book_append_sheet(resultWorkbook, instSheet, 'Instructions');
+                    }
+                    
+                    // Show results
+                    spinner.style.display = 'none';
+                    document.getElementById('downloadBtn').style.display = 'block';
+                    
+                    // Display stats
+                    displayStats(stats);
+                    
+                    if (errors.length > 0) {
+                        showStatus('warning', 'Processing completed with errors:', errors);
+                    } else {
+                        showStatus('success', 'Processing completed successfully! Your file is ready for download.');
+                    }
+                    
+                } catch (error) {
+                    spinner.style.display = 'none';
+                    showStatus('error', 'Processing failed: ' + error.message);
+                    document.getElementById('processBtn').disabled = false;
+                }
+            }, 500); // Small delay for UI feedback
+        }
+
+        function parseDate(dateValue) {
+            if (!dateValue) return null;
+            
+            // Handle different date formats
+            if (dateValue instanceof Date) {
+                return dateValue;
+            }
+            
+            // Handle Excel serial date
+            if (typeof dateValue === 'number') {
+                return XLSX.SSF.parse_date_code(dateValue);
+            }
+            
+            // Handle string dates
+            if (typeof dateValue === 'string') {
+                // Try parsing MM-DD-YYYY or MM/DD/YYYY
+                const parts = dateValue.split(/[-\/]/);
+                if (parts.length === 3) {
+                    // Assuming format is DD-Mon-YYYY or MM/DD/YYYY
+                    const date = new Date(dateValue);
+                    if (!isNaN(date.getTime())) {
+                        return date;
+                    }
+                }
+            }
+            
+            return null;
+        }
+
+        function formatDate(date) {
+            if (!date) return '';
+            
+            // Format as DD-Mon-YYYY to match Excel .xls format
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                          'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            
+            const dd = String(date.getDate()).padStart(2, '0');
+            const mmm = months[date.getMonth()];
+            const yyyy = date.getFullYear();
+            
+            return `${dd}-${mmm}-${yyyy}`;
+        }
+
+        function displayStats(stats) {
+            const statsGrid = document.getElementById('statsGrid');
+            statsGrid.innerHTML = `
+                <div class="stat-item">
+                    <div class="stat-label">Total Rows</div>
+                    <div class="stat-value">${stats.totalRows}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Rows Kept</div>
+                    <div class="stat-value">${stats.rowsKept}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Rows Removed</div>
+                    <div class="stat-value">${stats.rowsRemoved}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Items Confirmed</div>
+                    <div class="stat-value">${stats.itemsConfirmed}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Items Canceled</div>
+                    <div class="stat-value">${stats.itemsCanceled}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Dates Adjusted</div>
+                    <div class="stat-value">${stats.datesAdjusted}</div>
+                </div>
+            `;
+            document.getElementById('stats').style.display = 'block';
+        }
+
+        function downloadResult() {
+            if (!resultWorkbook) return;
+            
+            // Generate filename with timestamp
+            const now = new Date();
+            const timestamp = now.getFullYear() + 
+                            String(now.getMonth() + 1).padStart(2, '0') + 
+                            String(now.getDate()).padStart(2, '0') + '_' +
+                            String(now.getHours()).padStart(2, '0') +
+                            String(now.getMinutes()).padStart(2, '0');
+            
+            const filename = `PO_Confirmation_${timestamp}.xls`;
+            
+            // Write the file as .xls (BIFF8 format)
+            XLSX.writeFile(resultWorkbook, filename, { bookType: 'xls' });
+        }
     </script>
 </body>
 </html>
