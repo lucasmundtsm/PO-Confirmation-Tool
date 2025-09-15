@@ -414,7 +414,14 @@
             reader.onload = function(e) {
                 try {
                     const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array', cellDates: true, dateNF: 'mm/dd/yyyy' });
+                    // Read with cellDates: true to parse dates as Date objects
+                    const workbook = XLSX.read(data, { 
+                        type: 'array', 
+                        cellDates: true,
+                        dateNF: 'DD-MMM-YYYY',
+                        cellNF: true,
+                        cellStyles: true
+                    });
                     
                     if (type === 'poUpload') {
                         poUploadData = workbook;
@@ -501,7 +508,7 @@
                     
                     // Get PO Upload data
                     const poSheet = poUploadData.Sheets[poUploadData.SheetNames[0]];
-                    const poData = XLSX.utils.sheet_to_json(poSheet, { header: 1, raw: false, dateNF: 'mm/dd/yyyy' });
+                    const poData = XLSX.utils.sheet_to_json(poSheet, { header: 1, raw: false, dateNF: 'DD-MMM-YYYY' });
                     
                     // Build lookup maps from PO Upload
                     const validPOs = new Set();
@@ -522,9 +529,13 @@
                         }
                     }
                     
-                    // Get Confirm Download data
+                    // Get Confirm Download data - read raw values to preserve date types
                     const confirmSheet = confirmDownloadData.Sheets['Line Items'];
-                    const confirmData = XLSX.utils.sheet_to_json(confirmSheet, { header: 1, raw: false, dateNF: 'mm/dd/yyyy' });
+                    const confirmData = XLSX.utils.sheet_to_json(confirmSheet, { 
+                        header: 1, 
+                        raw: true,  // Keep raw values including date objects
+                        dateNF: 'DD-MMM-YYYY'
+                    });
                     
                     // Process Confirm Download data
                     const outputData = [];
@@ -555,7 +566,7 @@
                         const lookupKey = `${po}|${asin}`;
                         if (poAsinToQtyMap.has(lookupKey)) {
                             const qtyToFulfill = parseFloat(poAsinToQtyMap.get(lookupKey)) || 0;
-                            row[11] = qtyToFulfill.toString(); // Quantity Confirmed column
+                            row[11] = qtyToFulfill; // Keep as number, not string
                             
                             // Step 3: Update Availability Status
                             if (qtyToFulfill > 0) {
@@ -587,20 +598,24 @@
                         if (expectedDate && handOffEndDate) {
                             // Rule 1: Expected date cannot be later than Hand Off End
                             if (expectedDate > handOffEndDate) {
-                                expectedDate = handOffEndDate;
+                                expectedDate = new Date(handOffEndDate);
                                 dateAdjusted = true;
                             }
                             
                             // Rule 2: Expected date cannot be before today
                             if (expectedDate < today) {
-                                expectedDate = today;
+                                expectedDate = new Date(today);
                                 dateAdjusted = true;
                             }
                             
                             if (dateAdjusted) {
-                                row[17] = formatDate(expectedDate);
+                                // Store as Date object, not formatted string
+                                row[17] = expectedDate;
                                 stats.datesAdjusted++;
                             }
+                        } else if (expectedDate) {
+                            // Even if not adjusted, ensure it's a Date object
+                            row[17] = expectedDate;
                         }
                         
                         outputData.push(row);
@@ -617,7 +632,28 @@
                     }
                     
                     // Add Line Items sheet with processed data
-                    const outputSheet = XLSX.utils.aoa_to_sheet(outputData);
+                    // Use aoa_to_sheet with cellDates option to properly handle dates
+                    const outputSheet = XLSX.utils.aoa_to_sheet(outputData, {
+                        cellDates: true,
+                        dateNF: 'DD-MMM-YYYY'
+                    });
+                    
+                    // Ensure date columns have proper formatting
+                    // Column P (index 15) = Hand Off End
+                    // Column R (index 17) = Expected Hand Off Date
+                    for (let i = 3; i < outputData.length; i++) {
+                        const cellAddressHandOffEnd = XLSX.utils.encode_cell({r: i, c: 15});
+                        const cellAddressExpected = XLSX.utils.encode_cell({r: i, c: 17});
+                        
+                        // Set the number format for date cells
+                        if (outputSheet[cellAddressHandOffEnd] && outputSheet[cellAddressHandOffEnd].t === 'd') {
+                            outputSheet[cellAddressHandOffEnd].z = 'DD-MMM-YYYY';
+                        }
+                        if (outputSheet[cellAddressExpected] && outputSheet[cellAddressExpected].t === 'd') {
+                            outputSheet[cellAddressExpected].z = 'DD-MMM-YYYY';
+                        }
+                    }
+                    
                     XLSX.utils.book_append_sheet(resultWorkbook, outputSheet, 'Line Items');
                     
                     // Add Instructions sheet (if it exists)
@@ -650,44 +686,45 @@
         function parseDate(dateValue) {
             if (!dateValue) return null;
             
-            // Handle different date formats
+            // If it's already a Date object, return it
             if (dateValue instanceof Date) {
                 return dateValue;
             }
             
-            // Handle Excel serial date
+            // Handle Excel serial date number
             if (typeof dateValue === 'number') {
-                return XLSX.SSF.parse_date_code(dateValue);
+                // Excel stores dates as numbers (days since 1900-01-01)
+                // XLSX.js should have already converted these to Date objects if cellDates: true
+                const date = new Date((dateValue - 25569) * 86400 * 1000);
+                return date;
             }
             
             // Handle string dates
             if (typeof dateValue === 'string') {
-                // Try parsing MM-DD-YYYY or MM/DD/YYYY
-                const parts = dateValue.split(/[-\/]/);
-                if (parts.length === 3) {
-                    // Assuming format is DD-Mon-YYYY or MM/DD/YYYY
-                    const date = new Date(dateValue);
-                    if (!isNaN(date.getTime())) {
-                        return date;
+                // Try parsing various formats
+                const date = new Date(dateValue);
+                if (!isNaN(date.getTime())) {
+                    return date;
+                }
+                
+                // Try DD-Mon-YYYY format specifically
+                const monthMap = {
+                    'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
+                    'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
+                };
+                
+                const parts = dateValue.match(/(\d{1,2})-([A-Za-z]{3})-(\d{4})/);
+                if (parts) {
+                    const day = parseInt(parts[1]);
+                    const month = monthMap[parts[2]];
+                    const year = parseInt(parts[3]);
+                    if (month !== undefined) {
+                        return new Date(year, month, day);
                     }
                 }
             }
             
             return null;
-        }
-
-        function formatDate(date) {
-            if (!date) return '';
-            
-            // Format as DD-Mon-YYYY to match Excel .xls format
-            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
-                          'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            
-            const dd = String(date.getDate()).padStart(2, '0');
-            const mmm = months[date.getMonth()];
-            const yyyy = date.getFullYear();
-            
-            return `${dd}-${mmm}-${yyyy}`;
         }
 
         function displayStats(stats) {
@@ -734,8 +771,13 @@
             
             const filename = `PO_Confirmation_${timestamp}.xls`;
             
-            // Write the file as .xls (BIFF8 format)
-            XLSX.writeFile(resultWorkbook, filename, { bookType: 'xls' });
+            // Write the file as .xls with proper date handling
+            XLSX.writeFile(resultWorkbook, filename, { 
+                bookType: 'xls',
+                cellDates: true,
+                dateNF: 'DD-MMM-YYYY',
+                type: 'binary'
+            });
         }
     </script>
 </body>
