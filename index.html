@@ -518,7 +518,7 @@
                     for (let i = 1; i < poData.length; i++) {
                         const po = poData[i][0]; // Order/PO Number
                         const asin = poData[i][3]; // ASIN
-                        const qtyToFulfill = poData[i][5]; // Total Qty to Fulfill
+                        const qtyToFulfill = poData[i][42]; // Total Qty to Fulfill
                         
                         if (po) {
                             validPOs.add(po);
